@@ -3,13 +3,6 @@
 using namespace std;
 
 void Window::onCreate() {
-  // Load font with bigger size for the X's and O's
-  auto const filename{abcg::Application::getAssetsPath() +
-                      "Inconsolata-Medium.ttf"};
-  m_font = ImGui::GetIO().Fonts->AddFontFromFileTTF(filename.c_str(), 36.0f);
-  if (m_font == nullptr) {
-    throw abcg::RuntimeError{"Cannot load font file"};
-  }
 
   restartGame();
 }
@@ -24,26 +17,11 @@ void Window::onPaintUI() {
     ImGui::SetNextWindowSize(ImVec2(appWindowWidth, appWindowHeight));
     ImGui::SetNextWindowPos(ImVec2(0, 0));
 
-    auto const flags{ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoResize |
-                     ImGuiWindowFlags_NoCollapse};
+    auto const flags{ ImGuiWindowFlags_NoResize |
+                     ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar};
     ImGui::Begin("Gomoku", nullptr, flags);
 
-    // Menu
-    {
-      bool restartSelected{};
-      if (ImGui::BeginMenuBar()) {
-        if (ImGui::BeginMenu("Game")) {
-          ImGui::MenuItem("Restart", nullptr, &restartSelected);
-          ImGui::EndMenu();
-        }
-        ImGui::EndMenuBar();
-      }
-      if (restartSelected) {
-        restartGame();
-      }
-    }
-
-        // Static text showing current turn or win/draw messages
+    // Static text showing current turn or win/draw messages
     {
       std::string text;
       switch (m_gameState) {
@@ -71,11 +49,10 @@ void Window::onPaintUI() {
     
         // Game board
     {
-      auto const gridHeight{appWindowHeight - 22 - 60 - (m_N * 10) - 60};
+      auto const gridHeight{appWindowHeight - 22 - (m_N * 10) - 60};
       auto const buttonHeight{gridHeight / m_N};
 
       // Use custom font
-      ImGui::PushFont(m_font);
       if (ImGui::BeginTable("Game board", m_N)) {
         for (auto i : iter::range(m_N)) {
           ImGui::TableNextRow();
@@ -95,9 +72,12 @@ void Window::onPaintUI() {
               buttonChar = 'O';
               break;
             }
-            auto buttonText = fmt::format("{}##{}{}", buttonChar, i, j);
+            auto buttonText = fmt::format("{}##{:#02}{:#02}", buttonChar, i, j);
             
             if (ImGui::Button(buttonText.c_str(), ImVec2(-1, buttonHeight))) {
+              cout << m_board[i][j];
+              cout << " - ";
+              cout << buttonText << endl;
               if (m_gameState == GameState::Play && m_board[i][j] == 0) {
                 m_board[i][j] = m_XsTurn ? 1 : -1;
                 checkEndCondition(i,j);
@@ -109,7 +89,6 @@ void Window::onPaintUI() {
         }
         ImGui::EndTable();
       }
-      ImGui::PopFont();
     }
 
     ImGui::Spacing();
@@ -126,8 +105,8 @@ void Window::onPaintUI() {
 }
 
 void Window::restartGame() {
-  for(auto i : iter::range(15)) {
-    for(auto j : iter::range(15)) {
+  for(auto i : iter::range(m_N)) {
+    for(auto j : iter::range(m_N)) {
       m_board[i][j] = 0;
     }
   }
@@ -139,24 +118,27 @@ void Window::checkEndCondition(int i, int j) {
 
   auto minx{0}, maxx{0}, miny{0}, maxy{0}, sum_hor{0}, sum_ver{0}, sum_d1{0}, sum_d2{0};
 
-  minx = max(j-5,0);
-  miny = max(i-5,0);
+  minx = max(j-4,0);
+  miny = max(i-4,0);
   
-  maxx = min(j+5,15);
-  maxy = min(i+5,15);
+  maxx = min(j+4,15);
+  maxy = min(i+4,15);
   
   //check horizontal
   for(auto k : iter::range(minx, maxx)) {
     sum_hor += m_board[i][k];
   }
+
   //check vertical
   for(auto k : iter::range(miny, maxy)) {
     sum_ver += m_board[k][j];
   }
+
   //check first diagonal
   for(auto k : iter::range(miny, maxy)) {
     sum_d1 += m_board[i][k];
   }
+
   //check second diagonal
   for(auto k : iter::range(miny, maxy)) {
     sum_d2 += m_board[i][k];
