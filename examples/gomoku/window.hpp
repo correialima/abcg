@@ -15,11 +15,11 @@ private:
   GameState m_gameState;
 
   bool m_XsTurn{true};
-  std::array<char, m_N * m_N> m_board{}; // '\0', 'X' or 'O'
+  int m_board[15][15]; // -1, 0 or 1
 
   ImFont *m_font{};
 
-  void checkEndCondition();
+  void checkEndCondition(int i, int j);
   void restartGame();
 };
 
