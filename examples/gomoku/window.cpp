@@ -58,32 +58,35 @@ void Window::onPaintUI() {
           ImGui::TableNextRow();
           for (auto j : iter::range(m_N)) {
             ImGui::TableSetColumnIndex(j);
-            // Get current character
-
-            auto buttonChar{' '};
-            switch (m_board[i][j]) {
-            case 0:
-              buttonChar = ' ';
-              break;
-            case 1:
-              buttonChar = 'X';
-              break;
-            case -1:
-              buttonChar = 'O';
-              break;
-            }
-            auto buttonText = fmt::format("{}##{:#02}{:#02}", buttonChar, i, j);
             
+            
+            auto buttonText = fmt::format("##{:#02}{:#02}", i, j);
+            
+            ImGui::PushID(i*100+j);
+
+            if (m_board[i][j] == 0){
+              ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.0f, 0.0f, 0.48f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.0f, 0.0f, 0.48f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.0f, 0.0f, 0.48f));
+            }else if (m_board[i][j] == 1){
+              ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.0f, 1.0f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.0f, 1.0f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.0f, 1.0f, 1.0f));
+            }else if (m_board[i][j] == -1){
+              ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.66f, 1.0f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.66f, 1.0f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.66f, 1.0f, 1.0f));
+            }
             if (ImGui::Button(buttonText.c_str(), ImVec2(-1, buttonHeight))) {
-              cout << m_board[i][j];
-              cout << " - ";
-              cout << buttonText << endl;
               if (m_gameState == GameState::Play && m_board[i][j] == 0) {
                 m_board[i][j] = m_XsTurn ? 1 : -1;
                 checkEndCondition(i,j);
                 m_XsTurn = !m_XsTurn;
               }
             }
+
+            ImGui::PopStyleColor(3);
+            ImGui::PopID();
           }
           ImGui::Spacing();
         }
@@ -116,38 +119,109 @@ void Window::restartGame() {
 
 void Window::checkEndCondition(int i, int j) {
 
-  auto minx{0}, maxx{0}, miny{0}, maxy{0}, sum_hor{0}, sum_ver{0}, sum_d1{0}, sum_d2{0};
+  auto num_pos{0}, num_neg{0}, a{0}, b{0};
 
-  minx = max(j-4,0);
-  miny = max(i-4,0);
-  
-  maxx = min(j+4,15);
-  maxy = min(i+4,15);
-  
   //check horizontal
-  for(auto k : iter::range(minx, maxx)) {
-    sum_hor += m_board[i][k];
+  for(auto k : iter::range(-4, 5)) {
+    a = j + k;
+    if (a >= 0 && a <= m_N + 1){
+      if (num_pos == 5 || num_neg == 5) {break;}
+      if(m_board[i][a] == 1){
+        num_pos++;
+        num_neg = 0;
+      }else if (m_board[i][a] == -1){
+        num_neg++;
+        num_pos = 0;  
+      }else {
+        num_pos = 0;
+        num_neg = 0;
+      }
+    }
+  }
+  if (num_pos == 5){
+    m_gameState = GameState::WinX;
+    return;
+  }else if (num_neg == 5){
+    m_gameState = GameState::WinO;
+    return;
   }
 
   //check vertical
-  for(auto k : iter::range(miny, maxy)) {
-    sum_ver += m_board[k][j];
+  for(auto k : iter::range(-4, 5)) {
+    a = i + k;
+    if (a >= 0 && a <= m_N + 1){
+      if (num_pos == 5 || num_neg == 5) {break;}
+      if(m_board[a][j] == 1){
+        num_pos++;
+        num_neg = 0;
+      }else if (m_board[a][j] == -1){
+        num_neg++;
+        num_pos = 0;  
+      }else {
+        num_pos = 0;
+        num_neg = 0;
+      }
+    }
+  }
+  if (num_pos == 5){
+    m_gameState = GameState::WinX;
+    return;
+  }else if (num_neg == 5){
+    m_gameState = GameState::WinO;
+    return;
   }
 
   //check first diagonal
-  for(auto k : iter::range(miny, maxy)) {
-    sum_d1 += m_board[i][k];
+  for(auto k : iter::range(-4, 5)) {
+    a = i + k;
+    b = j + k;
+    if (a >= 0 && a <= m_N + 1){
+      if (num_pos == 5 || num_neg == 5) {break;}
+      if(m_board[a][b] == 1){
+        num_pos++;
+        num_neg = 0;
+      }else if (m_board[a][b] == -1){
+        num_neg++;
+        num_pos = 0;  
+      }else {
+        num_pos = 0;
+        num_neg = 0;
+      }
+    }
+  }
+  if (num_pos == 5){
+    m_gameState = GameState::WinX;
+    return;
+  }else if (num_neg == 5){
+    m_gameState = GameState::WinO;
+    return;
   }
 
   //check second diagonal
-  for(auto k : iter::range(miny, maxy)) {
-    sum_d2 += m_board[i][k];
+  for(auto k : iter::range(-4, 5)) {
+    a = i - k;
+    b = j + k;
+    if (a >= 0 && a <= m_N + 1){
+      if (num_pos == 5 || num_neg == 5) {break;}
+      if(m_board[a][b] == 1){
+        num_pos++;
+        num_neg = 0;
+      }else if (m_board[a][b] == -1){
+        num_neg++;
+        num_pos = 0;  
+      }else {
+        num_pos = 0;
+        num_neg = 0;
+      }
+    }
   }
-  
-  if (sum_hor == 5 || sum_ver == 5 || sum_d1 == 5 || sum_d2 == 5) {
+  if (num_pos == 5){
     m_gameState = GameState::WinX;
-  }else if (sum_hor == -5 || sum_ver == -5 || sum_d1 == -5 || sum_d2 == -5) {
+    return;
+  }else if (num_neg == 5){
     m_gameState = GameState::WinO;
+    return;
   }
+
 
 }
