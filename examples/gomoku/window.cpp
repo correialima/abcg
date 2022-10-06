@@ -21,21 +21,34 @@ void Window::onPaintUI() {
                      ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar};
     ImGui::Begin("Gomoku", nullptr, flags);
 
+
+    static ImVec4 blank_color = {0.5f,0.5f,0.5f,1.0f};
+    static ImVec4 player1_color = {0.0f,0.0f,0.0f,1.0f};
+    static ImVec4 player2_color = {1.0f,1.0f,1.0f,1.0f};
+    
+    ImGui::Spacing();
+
+    // players colors pickers
+    ImGui::ColorEdit3("Player 1",(float*)&player1_color, ImGuiColorEditFlags_NoInputs);
+    ImGui::SameLine();
+    ImGui::ColorEdit3("Player 2",(float*)&player2_color, ImGuiColorEditFlags_NoInputs);
+
+
     // Static text showing current turn or win/draw messages
     {
       std::string text;
       switch (m_gameState) {
       case GameState::Play:
-        text = fmt::format("{}'s turn", m_XsTurn ? 'X' : 'O');
+        text = fmt::format("{}'s turn", m_XsTurn ? "Player 1" : "Player 2");
         break;
       case GameState::Draw:
         text = "Draw!";
         break;
       case GameState::WinX:
-        text = "X's player wins!";
+        text = "Player 1 wins!";
         break;
       case GameState::WinO:
-        text = "O's player wins!";
+        text = "Player 2 wins!";
         break;
       }
       // Center text
@@ -48,9 +61,11 @@ void Window::onPaintUI() {
     ImGui::Spacing();
     
         // Game board
-    {
-      auto const gridHeight{appWindowHeight - 22 - (m_N * 10) - 60};
-      auto const buttonHeight{gridHeight / m_N};
+    { 
+      auto const board_size = min((appWindowWidth - 10 * m_N),(appWindowHeight-30-30-60-5 * m_N ));
+
+      auto const buttonWidth{board_size  / m_N};
+      auto const buttonHeight{buttonWidth};
 
       // Use custom font
       if (ImGui::BeginTable("Game board", m_N)) {
@@ -65,19 +80,19 @@ void Window::onPaintUI() {
             ImGui::PushID(i*100+j);
 
             if (m_board[i][j] == 0){
-              ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.0f, 0.0f, 0.48f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.0f, 0.0f, 0.48f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.0f, 0.0f, 0.48f));
+              ImGui::PushStyleColor(ImGuiCol_Button, blank_color);
+              ImGui::PushStyleColor(ImGuiCol_ButtonHovered, blank_color);
+              ImGui::PushStyleColor(ImGuiCol_ButtonActive, blank_color);
             }else if (m_board[i][j] == 1){
-              ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.0f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.0f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.0f, 1.0f, 1.0f));
+              ImGui::PushStyleColor(ImGuiCol_Button, player1_color);
+              ImGui::PushStyleColor(ImGuiCol_ButtonHovered, player1_color);
+              ImGui::PushStyleColor(ImGuiCol_ButtonActive, player1_color);
             }else if (m_board[i][j] == -1){
-              ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.66f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.66f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.66f, 1.0f, 1.0f));
+              ImGui::PushStyleColor(ImGuiCol_Button, player2_color);
+              ImGui::PushStyleColor(ImGuiCol_ButtonHovered, player2_color);
+              ImGui::PushStyleColor(ImGuiCol_ButtonActive, player2_color);
             }
-            if (ImGui::Button(buttonText.c_str(), ImVec2(-1, buttonHeight))) {
+            if (ImGui::Button(buttonText.c_str(), ImVec2(buttonWidth, buttonHeight))) {
               if (m_gameState == GameState::Play && m_board[i][j] == 0) {
                 m_board[i][j] = m_XsTurn ? 1 : -1;
                 checkEndCondition(i,j);
@@ -88,7 +103,8 @@ void Window::onPaintUI() {
             ImGui::PopStyleColor(3);
             ImGui::PopID();
           }
-          ImGui::Spacing();
+    ImGui::Spacing();
+
         }
         ImGui::EndTable();
       }
