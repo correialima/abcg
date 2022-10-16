@@ -18,6 +18,8 @@ protected:
   void onPaintUI() override;
   void onResize(glm::ivec2 const &size) override;
   void onDestroy() override;
+  void checkJump();
+  void checkGameOver();
 
 private:
   glm::ivec2 m_viewportSize{};

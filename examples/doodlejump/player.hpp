@@ -16,11 +16,19 @@ public:
   float m_rotation{};
   float xvel{}, yvel{}, xacc{}, yacc{};
   float m_scale{0.075f};
+  std::array<glm::vec2,4> positions;
+  bool jump{false};
   glm::vec2 m_translation{};
   glm::vec2 m_velocity{};
 
   abcg::Timer m_trailBlinkTimer;
   abcg::Timer m_jumpCoolDownTimer;
+
+
+  glm::vec2 m_top_left{};
+  glm::vec2 m_top_right{};
+  glm::vec2 m_bottom_left{};
+  glm::vec2 m_bottom_right{}; 
 
 private:
   GLuint m_program{};

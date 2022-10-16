@@ -9,16 +9,12 @@ void Window::onEvent(SDL_Event const &event) {
       m_gameData.m_input.set(gsl::narrow<size_t>(Input::Left));
     if (event.key.keysym.sym == SDLK_RIGHT || event.key.keysym.sym == SDLK_d)
       m_gameData.m_input.set(gsl::narrow<size_t>(Input::Right));
-    if (event.key.keysym.sym == SDLK_UP || event.key.keysym.sym == SDLK_w)
-      m_gameData.m_input.set(gsl::narrow<size_t>(Input::Jump));
   }
   if (event.type == SDL_KEYUP) {
     if (event.key.keysym.sym == SDLK_LEFT || event.key.keysym.sym == SDLK_a)
       m_gameData.m_input.reset(gsl::narrow<size_t>(Input::Left));
     if (event.key.keysym.sym == SDLK_RIGHT || event.key.keysym.sym == SDLK_d)
       m_gameData.m_input.reset(gsl::narrow<size_t>(Input::Right));
-    if (event.key.keysym.sym == SDLK_UP || event.key.keysym.sym == SDLK_w)
-      m_gameData.m_input.reset(gsl::narrow<size_t>(Input::Jump));
   }
 
   // Mouse events
@@ -78,7 +74,7 @@ void Window::restart() {
   m_gameData.m_state = State::Playing;
 
   m_player.create(m_objectsProgram);
-  m_platforms.create(m_objectsProgram,2);
+  m_platforms.create(m_objectsProgram,1);
 }
 
 void Window::onUpdate() {
@@ -93,6 +89,11 @@ void Window::onUpdate() {
 
   m_player.update(m_gameData, deltaTime);
   m_platforms.update(m_player,deltaTime);
+
+  if (m_gameData.m_state == State::Playing) {
+    checkJump();
+    checkGameOver();
+  }
 }
 
 
@@ -141,4 +142,30 @@ void Window::onDestroy() {
 
   m_player.destroy();
   m_platforms.destroy();
+}
+
+void Window::checkJump() {
+
+  for(auto const &platform : m_platforms.m_platforms){
+    //fmt::print("{} {}\n",platform.m_top_left.x,platform.m_top_left.y);
+
+
+    //fmt::print("{} {}\n",m_player.m_bottom_left.y,platform.m_top_left.y);
+    if (abs(m_player.m_bottom_left.y - platform.m_top_left.y) < 0.003f){ // if the bottom of player is level with the platform topW
+      if((m_player.m_bottom_left.x < platform.m_top_right.x && m_player.m_bottom_left.x > platform.m_top_left.x) || (m_player.m_bottom_right.x > platform.m_top_left.x && m_player.m_bottom_right.x < platform.m_top_right.x)){
+        //hit the platform
+        if(m_player.yvel < 0){
+          fmt::print("pulou\n");
+          m_player.jump = true;
+        }
+      }
+    }
+  }
+}
+
+void Window::checkGameOver() {
+  if(m_player.m_bottom_left.y < -1.0f){
+    m_gameData.m_state = State::GameOver;
+    m_restartWaitTimer.restart();
+  }
 }

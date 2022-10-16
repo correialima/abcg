@@ -20,11 +20,18 @@ void Player::create(GLuint program) {
   m_velocity = glm::vec2(0);
 
   // clang-format off
-  std::array positions{
+  positions = {
       // Doodle body
-      glm::vec2{-1.0f, +1.0f}, glm::vec2{-1.0f, -1.0f},
-      glm::vec2{+1.0f, -1.0f}, glm::vec2{+1.0f, +1.0f}  
+      glm::vec2{-1.0f, +1.0f}, //top left
+      glm::vec2{-1.0f, -1.0f}, //bottom left
+      glm::vec2{+1.0f, -1.0f}, //bottom right
+      glm::vec2{+1.0f, +1.0f}  //top right
       };
+
+  m_top_left = positions[0]*m_scale + m_translation;
+  m_top_right = positions[3]*m_scale + m_translation;
+  m_bottom_left = positions[1]*m_scale + m_translation;
+  m_bottom_right = positions[2]*m_scale + m_translation;
 
 
   // Normalization
@@ -79,7 +86,7 @@ void Player::paint(const GameData &gameData) {
   abcg::glBindVertexArray(m_VAO);
 
   abcg::glUniform1f(m_scaleLoc, m_scale);
-  abcg::glUniform1f(m_rotationLoc, m_rotation);
+  abcg::glUniform1f(m_rotationLoc, m_rotation * 0.0f);
   abcg::glUniform2fv(m_translationLoc, 1, &m_translation.x);
 
   abcg::glUniform4fv(m_colorLoc, 1, &m_color.r);
@@ -99,6 +106,12 @@ void Player::destroy() {
 
 void Player::update(GameData const &gameData, float deltaTime) {
   
+
+  m_top_left = positions[0]*m_scale + m_translation;
+  m_top_right = positions[3]*m_scale + m_translation;
+  m_bottom_left = positions[1]*m_scale + m_translation;
+  m_bottom_right = positions[2]*m_scale + m_translation;
+
   // move right
   if (gameData.m_input[gsl::narrow<size_t>(Input::Right)]){
     xvel = +1.0f;
@@ -127,14 +140,14 @@ void Player::update(GameData const &gameData, float deltaTime) {
 
   // player gravity
 
-  yacc = -2.0f;
+  yacc = -1.0f;
 
   // jump
   // ADD JUMP COOLDOWN TO LIMIT JUMP HEIGHT
   
-  if (yvel == 0){
-    
-    yvel = 1.5f;
+  if (jump){
+    yvel = 1.0f;
+    jump = false;
   }
   // if not above platform
 

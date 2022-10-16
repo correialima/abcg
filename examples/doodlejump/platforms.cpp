@@ -65,15 +65,26 @@ Platforms::Platform Platforms::makePlatform(glm::vec2 translation, float scale){
 
   auto &re{m_randomEngine};
 
-  platform.m_translation.x = m_randomDist(re);
+  //platform.m_translation.x = m_randomDist(re);
+
+  platform.m_translation.y = -0.7f;
 
   // clang-format off
   std::array positions{
-      // pltatform body
-      glm::vec2{-1.0f, -0.2f}, glm::vec2{-1.0f, +0.2f}, 
-      glm::vec2{+1.0f, -0.2f}, glm::vec2{+1.0f, +0.2f}  
+      // pltatform body 
+      glm::vec2{-1.0f, -0.2f}, //bottom left
+      glm::vec2{-1.0f, +0.2f}, //top left
+      glm::vec2{+1.0f, -0.2f}, //bottom right
+      glm::vec2{+1.0f, +0.2f}  //top right
       };
 
+  
+  platform.m_top_left = positions[1]*platform.m_scale + platform.m_translation;
+  platform.m_top_right = positions[3]*platform.m_scale + platform.m_translation;
+  platform.m_bottom_left = positions[0]*platform.m_scale + platform.m_translation;
+  platform.m_bottom_right = positions[2]*platform.m_scale + platform.m_translation;
+
+  fmt::print("{} {}\n", platform.m_top_left.x,platform.m_top_left.y);
   // Generate VBO
   abcg::glGenBuffers(1, &platform.m_VBO);
   abcg::glBindBuffer(GL_ARRAY_BUFFER, platform.m_VBO);
@@ -104,5 +115,7 @@ Platforms::Platform Platforms::makePlatform(glm::vec2 translation, float scale){
 }
 
 void Platforms::update(const Player &player, float deltaTime) {
+
+
   
 }

@@ -26,6 +26,12 @@ public:
     glm::vec2 m_translation{};
     glm::vec2 m_velocity{};
 
+    glm::vec2 m_top_left{};
+    glm::vec2 m_top_right{};
+    glm::vec2 m_bottom_left{};
+    glm::vec2 m_bottom_right{}; 
+    
+
   };
 
   std::list<Platform> m_platforms;
