@@ -21,7 +21,7 @@ void Player::create(GLuint program) {
 
   // clang-format off
   std::array positions{
-      // Ship body
+      // Doodle body
       glm::vec2{-1.0f, +1.0f}, glm::vec2{-1.0f, -1.0f},
       glm::vec2{+1.0f, -1.0f}, glm::vec2{+1.0f, +1.0f}  
       };
@@ -125,7 +125,7 @@ void Player::update(GameData const &gameData, float deltaTime) {
   }
     
 
-  // player gravity-
+  // player gravity
 
   yacc = -2.0f;
 
