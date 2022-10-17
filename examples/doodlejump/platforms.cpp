@@ -19,13 +19,9 @@ void Platforms::create(GLuint program,int quantity) {
   // Create platforms
   m_platforms.clear();
   m_platforms.resize(quantity);
-  
   for (auto &platform : m_platforms) {
     platform = makePlatform();
   }
-
-
-
 }
 
 void Platforms::paint() {
@@ -51,45 +47,49 @@ void Platforms::paint() {
 }
 
 void Platforms::destroy() {
-  for (auto &platforms : m_platforms) {
-    abcg::glDeleteBuffers(1, &platforms.m_VBO);
-    abcg::glDeleteVertexArrays(1, &platforms.m_VAO);
+  for (auto &platform : m_platforms) {
+    abcg::glDeleteBuffers(1, &platform.m_VBO);
+    abcg::glDeleteVertexArrays(1, &platform.m_VAO);
   }
+  step_height = -0.7f;
+  horizontal_drift = 0.0f;
+  yvel = -0.1f;
 }
 
 
 
-Platforms::Platform Platforms::makePlatform(glm::vec2 translation, float scale){
+Platforms::Platform Platforms::makePlatform(){
 
   Platform platform;
-
   auto &re{m_randomEngine};
 
-  //platform.m_translation.x = m_randomDist(re);
-
-  platform.m_translation.y = -0.7f;
-
   // clang-format off
-  std::array positions{
+  platform.positions = {
       // pltatform body 
       glm::vec2{-1.0f, -0.2f}, //bottom left
       glm::vec2{-1.0f, +0.2f}, //top left
-      glm::vec2{+1.0f, -0.2f}, //bottom right
+      glm::vec2{+1.0f, -0.2f}, //bottom rig'ht
       glm::vec2{+1.0f, +0.2f}  //top right
       };
 
-  
-  platform.m_top_left = positions[1]*platform.m_scale + platform.m_translation;
-  platform.m_top_right = positions[3]*platform.m_scale + platform.m_translation;
-  platform.m_bottom_left = positions[0]*platform.m_scale + platform.m_translation;
-  platform.m_bottom_right = positions[2]*platform.m_scale + platform.m_translation;
+  platform.m_translation.y = step_height;
+  platform.m_translation.x = horizontal_drift;
 
-  fmt::print("{} {}\n", platform.m_top_left.x,platform.m_top_left.y);
+  horizontal_drift = m_randomDist(re);
+
+  std::uniform_real_distribution randomVerticalDrift(-0.1f, +0.1f);
+  step_height +=  +0.2f + randomVerticalDrift(re);
+  
+  platform.m_top_left = platform.positions[1]*platform.m_scale + platform.m_translation;
+  platform.m_top_right = platform.positions[3]*platform.m_scale + platform.m_translation;
+  platform.m_bottom_left = platform.positions[0]*platform.m_scale + platform.m_translation;
+  platform.m_bottom_right = platform.positions[2]*platform.m_scale + platform.m_translation;
+
   // Generate VBO
   abcg::glGenBuffers(1, &platform.m_VBO);
   abcg::glBindBuffer(GL_ARRAY_BUFFER, platform.m_VBO);
-  abcg::glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(glm::vec2),
-                     positions.data(), GL_STATIC_DRAW);
+  abcg::glBufferData(GL_ARRAY_BUFFER, platform.positions.size() * sizeof(glm::vec2),
+                     platform.positions.data(), GL_STATIC_DRAW);
   abcg::glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   // Get location of attributes in the program
@@ -116,6 +116,21 @@ Platforms::Platform Platforms::makePlatform(glm::vec2 translation, float scale){
 
 void Platforms::update(const Player &player, float deltaTime) {
 
-
   
+  for (auto &platform : m_platforms) {
+    platform.m_top_left = platform.positions[1]*platform.m_scale + platform.m_translation;
+    platform.m_top_right = platform.positions[3]*platform.m_scale + platform.m_translation;
+    platform.m_bottom_left = platform.positions[0]*platform.m_scale + platform.m_translation;
+    platform.m_bottom_right = platform.positions[2]*platform.m_scale + platform.m_translation;  
+  }
+
+  if (player.m_translation.y > 1.0f && speedUpCooldownTimer.elapsed() > 10){
+    yvel *= 1.2f;
+    speedUpCooldownTimer.restart();
+  }
+
+  for(auto &platform : m_platforms){
+    platform.m_translation.y += deltaTime * yvel;
+  }
+
 }

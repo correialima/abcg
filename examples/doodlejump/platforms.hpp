@@ -24,8 +24,9 @@ public:
     float m_rotation{};
     float m_scale{0.10f};
     glm::vec2 m_translation{};
-    glm::vec2 m_velocity{};
+    std::array<glm::vec2,4> positions;
 
+    float height{};
     glm::vec2 m_top_left{};
     glm::vec2 m_top_right{};
     glm::vec2 m_bottom_left{};
@@ -34,9 +35,10 @@ public:
 
   };
 
+  float yvel{-0.1f};
   std::list<Platform> m_platforms;
 
-  Platform makePlatform(glm::vec2 translation = {}, float scale = 0.10f); 
+  Platform makePlatform(); 
 
 private:
   GLuint m_program{};
@@ -45,7 +47,10 @@ private:
   GLint m_scaleLoc{};
   GLint m_rotationLoc{};
 
+  float step_height{-0.7f};
+  float horizontal_drift{0.0f};
   std::default_random_engine m_randomEngine;
   std::uniform_real_distribution<float> m_randomDist{-0.8f, 0.8f};
+  abcg::Timer speedUpCooldownTimer;
 };
 #endif

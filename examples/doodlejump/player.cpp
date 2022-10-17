@@ -101,12 +101,13 @@ void Player::destroy() {
   abcg::glDeleteBuffers(1, &m_VBO);
   abcg::glDeleteBuffers(1, &m_EBO);
   abcg::glDeleteVertexArrays(1, &m_VAO);
+  yvel = 0.0f;
 }
 
 
 void Player::update(GameData const &gameData, float deltaTime) {
   
-
+  // updating player hitbox to handle collisions
   m_top_left = positions[0]*m_scale + m_translation;
   m_top_right = positions[3]*m_scale + m_translation;
   m_bottom_left = positions[1]*m_scale + m_translation;
@@ -130,34 +131,15 @@ void Player::update(GameData const &gameData, float deltaTime) {
   if (m_translation.x > +1.0f)
     m_translation.x = -1.0f;
 
-
-  // hit bottom or platform 
-  if (m_translation.y < -1.0f){
-    m_translation.y = -1.0f;
-    yvel = 0;
-  }
-    
-
-  // player gravity
-
-  yacc = -1.0f;
-
   // jump
-  // ADD JUMP COOLDOWN TO LIMIT JUMP HEIGHT
-  
   if (jump){
     yvel = 1.0f;
     jump = false;
   }
-  // if not above platform
 
+  // player gravity
+  yacc = -1.0f;
   yvel += yacc*deltaTime;
-
   m_translation.y += yvel*deltaTime;
-
-
-  //stop falling if above platform
-
-
 
 }

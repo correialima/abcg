@@ -74,7 +74,7 @@ void Window::restart() {
   m_gameData.m_state = State::Playing;
 
   m_player.create(m_objectsProgram);
-  m_platforms.create(m_objectsProgram,1);
+  m_platforms.create(m_objectsProgram,1000);
 }
 
 void Window::onUpdate() {
@@ -82,14 +82,14 @@ void Window::onUpdate() {
 
   // Wait 5 seconds before restarting
   if (m_gameData.m_state != State::Playing &&
-      m_restartWaitTimer.elapsed() > 5) {
+      m_restartWaitTimer.elapsed() > 3) {
     restart();
     return;
   }
 
   m_player.update(m_gameData, deltaTime);
   m_platforms.update(m_player,deltaTime);
-
+  
   if (m_gameData.m_state == State::Playing) {
     checkJump();
     checkGameOver();
@@ -122,8 +122,6 @@ void Window::onPaintUI() {
 
     if (m_gameData.m_state == State::GameOver) {
       ImGui::Text("Game Over!");
-    } else if (m_gameData.m_state == State::Win) {
-      ImGui::Text("*You Win!*");
     }
 
     ImGui::PopFont();
@@ -147,21 +145,20 @@ void Window::onDestroy() {
 void Window::checkJump() {
 
   for(auto const &platform : m_platforms.m_platforms){
-    //fmt::print("{} {}\n",platform.m_top_left.x,platform.m_top_left.y);
-
-
-    //fmt::print("{} {}\n",m_player.m_bottom_left.y,platform.m_top_left.y);
-    if (abs(m_player.m_bottom_left.y - platform.m_top_left.y) < 0.003f){ // if the bottom of player is level with the platform topW
+    if (abs(m_player.m_bottom_left.y - platform.m_top_left.y) < 0.005f){ // if the bottom of player is level with the platform top
+      //fmt::print("{} {} {}\n", m_player.m_bottom_left.x, platform.m_top_left.x, platform.m_top_right.x);
       if((m_player.m_bottom_left.x < platform.m_top_right.x && m_player.m_bottom_left.x > platform.m_top_left.x) || (m_player.m_bottom_right.x > platform.m_top_left.x && m_player.m_bottom_right.x < platform.m_top_right.x)){
+        
         //hit the platform
         if(m_player.yvel < 0){
-          fmt::print("pulou\n");
           m_player.jump = true;
         }
       }
     }
   }
 }
+
+
 
 void Window::checkGameOver() {
   if(m_player.m_bottom_left.y < -1.0f){
