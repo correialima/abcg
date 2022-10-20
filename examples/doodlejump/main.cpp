@@ -5,10 +5,14 @@ int main(int argc, char **argv) {
     abcg::Application app(argc, argv);
 
     Window window;
-    window.setOpenGLSettings(
-        {.samples = 2, .doubleBuffering = false});
-    window.setWindowSettings(
-        {.width = 600, .height = 600, .title = "Doodle Jump"});
+    window.setOpenGLSettings({.samples = 4});
+    window.setWindowSettings({
+        .width = 600,
+        .height = 600,
+        .showFPS = false,
+        .showFullscreenButton = false,
+        .title = "Doodle Jump!",
+    });
 
     app.run(window);
   } catch (std::exception const &exception) {

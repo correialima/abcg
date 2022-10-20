@@ -28,20 +28,14 @@ void Player::create(GLuint program) {
       glm::vec2{+1.0f, +1.0f}  //top right
       };
 
+  // creates reference points for player "hitbox", used for detecting jumps
   m_top_left = positions[0]*m_scale + m_translation;
   m_top_right = positions[3]*m_scale + m_translation;
   m_bottom_left = positions[1]*m_scale + m_translation;
   m_bottom_right = positions[2]*m_scale + m_translation;
 
-
-  // Normalization
-  for (auto &position : positions) {
-    position /= glm::vec2{1.0f, 1.0f};
-  }
-
   std::array const indices{0, 1, 3,
                            1, 2, 3};
-  // clang-format on                           
 
   // Generate VBO
   abcg::glGenBuffers(1, &m_VBO);
@@ -107,7 +101,7 @@ void Player::destroy() {
 
 void Player::update(GameData const &gameData, float deltaTime) {
   
-  // updating player hitbox to handle collisions
+  // updating player hitbox to handle jumping
   m_top_left = positions[0]*m_scale + m_translation;
   m_top_right = positions[3]*m_scale + m_translation;
   m_bottom_left = positions[1]*m_scale + m_translation;
@@ -125,7 +119,7 @@ void Player::update(GameData const &gameData, float deltaTime) {
     m_translation = glm::vec2{m_translation.x + xvel * deltaTime,m_translation.y};
   }
 
-  // Wrap-around
+  // Wrap-around horizontally
   if (m_translation.x < -1.0f)
     m_translation.x = 1.0f;
   if (m_translation.x > +1.0f)

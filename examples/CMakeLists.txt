@@ -2,5 +2,5 @@
 # add_subdirectory(tictactoe)
 # add_subdirectory(gomoku)
 # add_subdirectory(coloredtriangles)
-# add_subdirectory(asteroids)
+add_subdirectory(asteroids)
 add_subdirectory(doodlejump)

@@ -3,8 +3,6 @@
 void Window::onEvent(SDL_Event const &event) {
   // Keyboard events
   if (event.type == SDL_KEYDOWN) {
-    if (event.key.keysym.sym == SDLK_SPACE)
-      m_gameData.m_input.set(gsl::narrow<size_t>(Input::Fire));
     if (event.key.keysym.sym == SDLK_LEFT || event.key.keysym.sym == SDLK_a)
       m_gameData.m_input.set(gsl::narrow<size_t>(Input::Left));
     if (event.key.keysym.sym == SDLK_RIGHT || event.key.keysym.sym == SDLK_d)
@@ -16,35 +14,17 @@ void Window::onEvent(SDL_Event const &event) {
     if (event.key.keysym.sym == SDLK_RIGHT || event.key.keysym.sym == SDLK_d)
       m_gameData.m_input.reset(gsl::narrow<size_t>(Input::Right));
   }
-
-  // Mouse events
-  if (event.type == SDL_MOUSEBUTTONDOWN) {
-    if (event.button.button == SDL_BUTTON_LEFT)
-      m_gameData.m_input.set(gsl::narrow<size_t>(Input::Fire));
-  }
-  if (event.type == SDL_MOUSEBUTTONUP) {
-    if (event.button.button == SDL_BUTTON_LEFT)
-      m_gameData.m_input.reset(gsl::narrow<size_t>(Input::Fire));
-  }
-
-  if (event.type == SDL_MOUSEMOTION) {
-    glm::ivec2 mousePosition;
-    SDL_GetMouseState(&mousePosition.x, &mousePosition.y);
-
-    glm::vec2 direction{mousePosition.x - m_viewportSize.x / 2,
-                        -(mousePosition.y - m_viewportSize.y / 2)};
-
-    m_player.m_rotation = std::atan2(direction.y, direction.x) - M_PI_2;
-  }
 }
+
 
 void Window::onCreate() {
   auto const assetsPath{abcg::Application::getAssetsPath()};
 
-  // Load a new font
-  auto const filename{assetsPath + "Inconsolata-Medium.ttf"};
-  m_font = ImGui::GetIO().Fonts->AddFontFromFileTTF(filename.c_str(), 60.0f);
-  if (m_font == nullptr) {
+  // Load fonts in two sizes, one for score information and one for game over message
+  auto const filename{assetsPath + "ArcadeClassic.ttf"};
+  m_fontBig = ImGui::GetIO().Fonts->AddFontFromFileTTF(filename.c_str(), 60.0f);
+  m_fontSmall = ImGui::GetIO().Fonts->AddFontFromFileTTF(filename.c_str(), 30.0f);
+  if (m_fontBig == nullptr) {
     throw abcg::RuntimeError("Cannot load font file");
   }
 
@@ -87,9 +67,11 @@ void Window::onUpdate() {
     return;
   }
 
+  // updating player and platforms
   m_player.update(m_gameData, deltaTime);
   m_platforms.update(m_player,deltaTime);
   
+  // checks for player jumps on platforms and for game over condition
   if (m_gameData.m_state == State::Playing) {
     checkJump();
     checkGameOver();
@@ -109,16 +91,39 @@ void Window::onPaintUI() {
   abcg::OpenGLWindow::onPaintUI();
 
   {
+    // flags for score and game over windows
+    ImGuiWindowFlags const flags{ImGuiWindowFlags_NoBackground |
+                                 ImGuiWindowFlags_NoTitleBar |
+                                 ImGuiWindowFlags_NoInputs};
+                                 
+    // creating texts for the score information window
+    auto const scoreString = fmt::format("Score: {}",score);
+    const char *scoreString_ = scoreString.c_str();
+    auto const highScoreString = fmt::format("High Score: {}",highScore);
+    const char *highScoreString_ = highScoreString.c_str();
+
+    ImGui::SetNextWindowSize(ImVec2(600,50));
+    ImGui::SetNextWindowPos({ImVec2(0.0f,m_viewportSize.y - 40)});
+
+    ImGui::Begin("Score", nullptr, flags);
+    ImGui::PushFont(m_fontSmall);
+
+    ImGui::Text(scoreString_);
+    ImGui::SameLine();
+    ImGui::Text(highScoreString_);
+    ImGui::PopFont();
+
+    ImGui::End();
+    
+
+    // creating game over window, shown if game is over
     auto const size{ImVec2(300, 85)};
     auto const position{ImVec2((m_viewportSize.x - size.x) / 2.0f,
                                (m_viewportSize.y - size.y) / 2.0f)};
     ImGui::SetNextWindowPos(position);
     ImGui::SetNextWindowSize(size);
-    ImGuiWindowFlags const flags{ImGuiWindowFlags_NoBackground |
-                                 ImGuiWindowFlags_NoTitleBar |
-                                 ImGuiWindowFlags_NoInputs};
-    ImGui::Begin(" ", nullptr, flags);
-    ImGui::PushFont(m_font);
+    ImGui::Begin("Game Over", nullptr, flags);
+    ImGui::PushFont(m_fontBig);
 
     if (m_gameData.m_state == State::GameOver) {
       ImGui::Text("Game Over!");
@@ -143,15 +148,21 @@ void Window::onDestroy() {
 }
 
 void Window::checkJump() {
+  // checks if player has jumped on any of the platforms
 
   for(auto const &platform : m_platforms.m_platforms){
-    if (abs(m_player.m_bottom_left.y - platform.m_top_left.y) < 0.005f){ // if the bottom of player is level with the platform top
+    if (abs(m_player.m_bottom_left.y - platform.m_top_left.y) < 0.01f){ // if the bottom of player is level with the platform top
       //fmt::print("{} {} {}\n", m_player.m_bottom_left.x, platform.m_top_left.x, platform.m_top_right.x);
-      if((m_player.m_bottom_left.x < platform.m_top_right.x && m_player.m_bottom_left.x > platform.m_top_left.x) || (m_player.m_bottom_right.x > platform.m_top_left.x && m_player.m_bottom_right.x < platform.m_top_right.x)){
-        
-        //hit the platform
-        if(m_player.yvel < 0){
+      if((m_player.m_bottom_left.x < platform.m_top_right.x && m_player.m_bottom_left.x > platform.m_top_left.x) ||   // if player left side is inside the platform
+          (m_player.m_bottom_right.x > platform.m_top_left.x && m_player.m_bottom_right.x < platform.m_top_right.x)){ // or if right side of player is inside platform
+            
+        if(m_player.yvel < 0){ // if player is falling
           m_player.jump = true;
+          
+          score = std::max(score,(int) ((platform.height + 0.7f) *10.0f)); // updates score
+          if (score >= highScore){ 
+            highScore = score; // updates highscore if score is above it
+          }
         }
       }
     }
@@ -161,8 +172,11 @@ void Window::checkJump() {
 
 
 void Window::checkGameOver() {
+  // check if player hits the bottom of the screen
+
   if(m_player.m_bottom_left.y < -1.0f){
-    m_gameData.m_state = State::GameOver;
+    m_gameData.m_state = State::GameOver; // updates game state
+    score = 0; // reseting score for next try
     m_restartWaitTimer.restart();
   }
 }

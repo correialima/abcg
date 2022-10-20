@@ -68,15 +68,16 @@ Platforms::Platform Platforms::makePlatform(){
       // pltatform body 
       glm::vec2{-1.0f, -0.2f}, //bottom left
       glm::vec2{-1.0f, +0.2f}, //top left
-      glm::vec2{+1.0f, -0.2f}, //bottom rig'ht
+      glm::vec2{+1.0f, -0.2f}, //bottom right
       glm::vec2{+1.0f, +0.2f}  //top right
       };
 
   platform.m_translation.y = step_height;
   platform.m_translation.x = horizontal_drift;
+  platform.height = step_height;
 
+  // updates random variables for next platform
   horizontal_drift = m_randomDist(re);
-
   std::uniform_real_distribution randomVerticalDrift(-0.1f, +0.1f);
   step_height +=  +0.2f + randomVerticalDrift(re);
   

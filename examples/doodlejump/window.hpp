@@ -35,7 +35,7 @@ private:
 
   abcg::Timer m_restartWaitTimer;
 
-  ImFont *m_font{};
+  ImFont *m_fontBig{}, *m_fontSmall{};
 
   std::default_random_engine m_randomEngine;
 
