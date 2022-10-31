@@ -146,9 +146,7 @@ Clouds::Cloud Clouds::makeCloud(){
   cloud.m_translation.x = horizontal_drift;
   cloud.height = step_height;
 
-
-
-  cloud.m_color[3] = m_randomDist(re) * 0.3f + 0.6f;
+  cloud.m_color[3] = m_randomDist(re) * 0.3f + 0.7f;
 
   
   // Generate VBO
