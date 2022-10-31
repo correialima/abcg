@@ -23,8 +23,6 @@ public:
   glm::vec2 m_acceleration{};
   bool jump{false};
 
-  abcg::Timer m_jumpCoolDownTimer;
-
   // hitbox attributes
   glm::vec2 m_bottom_left{};
   glm::vec2 m_bottom_right{}; 

@@ -27,9 +27,6 @@ public:
 
     // movement attributes
     glm::vec2 m_translation{};
-
-    float height{}; // used for score calculation
-
   };
 
 
