@@ -1,5 +1,5 @@
-#ifndef PLATFORMS_HPP_
-#define PLATFORMS_HPP_
+#ifndef CLOUDS_HPP_
+#define CLOUDS_HPP_
 
 #include "abcgOpenGL.hpp"
 
@@ -9,41 +9,35 @@
 #include "gamedata.hpp"
 #include "player.hpp"
 
-class Platforms {
+class Clouds {
 public:
   void create(GLuint program,int quantity);
   void paint();
   void destroy();
-  void update(const Player &player, float deltaTime);
+  void update(float deltaTime);
 
-  // struct for a single platform 
-  struct Platform {
+  // struct for a single Cloud 
+  struct Cloud {
     GLuint m_VAO{};
     GLuint m_VBO{};
 
     // graphics attributes
-    glm::vec4 m_color{0.329f,0.208f,0.082f,1.0f};
-    float m_scale{0.10f};
-    std::array<glm::vec2,4> positions;
+    glm::vec4 m_color{1.0f,1.0f,1.0f,0.5f};
+    float m_scale{0.35f};
 
     // movement attributes
     glm::vec2 m_translation{};
 
     float height{}; // used for score calculation
 
-    // hitbox attributes
-    glm::vec2 m_top_left{};
-    glm::vec2 m_top_right{};
-    
-
   };
 
 
-  glm::vec2 m_velocity{-0.1f,0.0f}; // movement speed for all platforms
+  glm::vec2 m_velocity{0.0f,-0.1f}; // movement speed for all clouds
   
-  std::list<Platform> m_platforms;
+  std::list<Cloud> m_clouds;
 
-  Platform makePlatform(); 
+  Cloud makeCloud(); 
 
 private:
   GLuint m_program{};
@@ -56,7 +50,7 @@ private:
   float step_height{-0.7f};
   float horizontal_drift{0.0f};
   std::default_random_engine m_randomEngine;
-  std::uniform_real_distribution<float> m_randomDist{-0.8f, 0.8f};
+  std::uniform_real_distribution<float> m_randomDist{0.0f, 1.0f};
 
 };
 #endif

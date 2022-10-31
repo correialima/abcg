@@ -12,21 +12,20 @@ public:
   void destroy();
   void update(GameData const &gameData, float deltaTime);
 
+  // graphic attributes
   glm::vec4 m_color{0.25f,0.0f,0.50f,1.0f};
-  float m_rotation{};
-  float xvel{}, yvel{}, xacc{}, yacc{};
   float m_scale{0.075f};
-  std::array<glm::vec2,4> positions;
-  bool jump{false};
+
+  // movement attributes
+  std::array<glm::vec2,12> positions;
   glm::vec2 m_translation{};
   glm::vec2 m_velocity{};
+  glm::vec2 m_acceleration{};
+  bool jump{false};
 
-  abcg::Timer m_trailBlinkTimer;
   abcg::Timer m_jumpCoolDownTimer;
 
-
-  glm::vec2 m_top_left{};
-  glm::vec2 m_top_right{};
+  // hitbox attributes
   glm::vec2 m_bottom_left{};
   glm::vec2 m_bottom_right{}; 
 
@@ -35,7 +34,6 @@ private:
   GLint m_translationLoc{};
   GLint m_colorLoc{};
   GLint m_scaleLoc{};
-  GLint m_rotationLoc{};
 
   GLuint m_VAO{};
   GLuint m_VBO{};

@@ -7,6 +7,7 @@
 
 #include "player.hpp"
 #include "platforms.hpp"
+#include "clouds.hpp"
 
 
 class Window : public abcg::OpenGLWindow {
@@ -20,11 +21,13 @@ protected:
   void onDestroy() override;
   void checkJump();
   void checkGameOver();
+  void increaseSpeed();
 
 private:
   glm::ivec2 m_viewportSize{};
 
   int score = {}, highScore = {};
+  float speed{1.0f};
   GLuint m_objectsProgram{};
 
   GameData m_gameData;
@@ -32,8 +35,10 @@ private:
   Player m_player;
 
   Platforms m_platforms;
+  Clouds m_clouds;
 
   abcg::Timer m_restartWaitTimer;
+  abcg::Timer speedUpCooldownTimer;
 
   ImFont *m_fontBig{}, *m_fontSmall{};
 

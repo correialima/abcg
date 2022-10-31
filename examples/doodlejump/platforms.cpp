@@ -12,7 +12,6 @@ void Platforms::create(GLuint program,int quantity) {
 
   // Get location of uniforms in the program
   m_colorLoc = abcg::glGetUniformLocation(m_program, "color");
-  m_rotationLoc = abcg::glGetUniformLocation(m_program, "rotation");
   m_scaleLoc = abcg::glGetUniformLocation(m_program, "scale");
   m_translationLoc = abcg::glGetUniformLocation(m_program, "translation");
 
@@ -32,7 +31,6 @@ void Platforms::paint() {
 
     abcg::glUniform4fv(m_colorLoc, 1, &platform.m_color.r);
     abcg::glUniform1f(m_scaleLoc, platform.m_scale);
-    abcg::glUniform1f(m_rotationLoc, platform.m_rotation);
 
     abcg::glUniform2f(m_translationLoc, platform.m_translation.x,
                       platform.m_translation.y);
@@ -51,9 +49,11 @@ void Platforms::destroy() {
     abcg::glDeleteBuffers(1, &platform.m_VBO);
     abcg::glDeleteVertexArrays(1, &platform.m_VAO);
   }
+
+  // reset inicial parameters for platforms
   step_height = -0.7f;
   horizontal_drift = 0.0f;
-  yvel = -0.1f;
+  m_velocity.y = -0.1f;
 }
 
 
@@ -83,8 +83,6 @@ Platforms::Platform Platforms::makePlatform(){
   
   platform.m_top_left = platform.positions[1]*platform.m_scale + platform.m_translation;
   platform.m_top_right = platform.positions[3]*platform.m_scale + platform.m_translation;
-  platform.m_bottom_left = platform.positions[0]*platform.m_scale + platform.m_translation;
-  platform.m_bottom_right = platform.positions[2]*platform.m_scale + platform.m_translation;
 
   // Generate VBO
   abcg::glGenBuffers(1, &platform.m_VBO);
@@ -120,18 +118,11 @@ void Platforms::update(const Player &player, float deltaTime) {
   
   for (auto &platform : m_platforms) {
     platform.m_top_left = platform.positions[1]*platform.m_scale + platform.m_translation;
-    platform.m_top_right = platform.positions[3]*platform.m_scale + platform.m_translation;
-    platform.m_bottom_left = platform.positions[0]*platform.m_scale + platform.m_translation;
-    platform.m_bottom_right = platform.positions[2]*platform.m_scale + platform.m_translation;  
-  }
-
-  if (player.m_translation.y > 1.0f && speedUpCooldownTimer.elapsed() > 10){
-    yvel *= 1.2f;
-    speedUpCooldownTimer.restart();
+    platform.m_top_right = platform.positions[3]*platform.m_scale + platform.m_translation; 
   }
 
   for(auto &platform : m_platforms){
-    platform.m_translation.y += deltaTime * yvel;
+    platform.m_translation.y += deltaTime * m_velocity.y;
   }
 
 }
